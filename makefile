@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -std=c99
-LDFLAGS = -lncurses
+LDFLAGS = -lncurses -pthread
 EXECS = client server
 .PHONY: all clean
 
