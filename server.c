@@ -17,28 +17,22 @@
 #include "common.h"
 #include "network.h"
 
-typedef struct {
-    unsigned int id;
-    point_t loc;
-    char *name;
-    FILE *stream;
 
-} player_t;
+server_state_t state;
 
-void player_join(FILE *io);
-int add_player(player_t *);
-void remove_player(player_t *);
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        printf("usage: server <port> <players>\n");
+        return 1;
+    }
 
+    init_state(atoi(argv[2]));
 
-typedef struct {
-    player_t *players;
-    unsigned int max_players;
-    unsigned int num_players;
-    
-    pthread_mutex_t mutex;
-} state_t;
+    pthread_t listener = start_listener(atoi(argv[1]), &player_joined);
 
-state_t state;
+    pause();    
+    return 0;
+}
 
 void init_state(int max_players) {
     state.num_players = 0;
@@ -47,27 +41,7 @@ void init_state(int max_players) {
     pthread_mutex_init(&state.mutex, NULL);
 }
 
-void init_player(player_t *p) {
-    
-}
-
-int main(int argc, char *argv[]) {
-    
-    if (argc != 3) {
-        printf("usage: server <port> <players>\n");
-        return 1;
-    }
-
-    init_state(atoi(argv[2]));
-
-    pthread_t listener = start_listener(atoi(argv[1]), &player_join);
-    printf("created listener\n");
-
-    pause();    
-    return 0;
-}
-
-void player_join(FILE *io) {
+void player_joined(FILE *io) {
     printf("new client !\n");
 }
 

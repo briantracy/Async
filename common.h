@@ -16,11 +16,6 @@ typedef struct {
     int x, y;
 } point_t;
 
-typedef struct {
-    unsigned int id;
-    point_t loc;
-    char *name;
-} player_t;
 
 typedef enum {
     NORTH = 0,
