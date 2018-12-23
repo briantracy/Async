@@ -11,72 +11,84 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "server.h"
 #include "common.h"
+#include "network.h"
+
+typedef struct {
+    unsigned int id;
+    point_t loc;
+    char *name;
+    FILE *stream;
+
+} player_t;
+
+void player_join(FILE *io);
+int add_player(player_t *);
+void remove_player(player_t *);
 
 
+typedef struct {
+    player_t *players;
+    unsigned int max_players;
+    unsigned int num_players;
+    
+    pthread_mutex_t mutex;
+} state_t;
+
+state_t state;
+
+void init_state(int max_players) {
+    state.num_players = 0;
+    state.max_players = max_players;
+    state.players = malloc(sizeof(player_t) * max_players);
+    pthread_mutex_init(&state.mutex, NULL);
+}
+
+void init_player(player_t *p) {
+    
+}
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("usage: async-server <port>\n");
+    
+    if (argc != 3) {
+        printf("usage: server <port> <players>\n");
         return 1;
     }
-    int port = atoi(argv[1]);
-    int lsock;
-    if ((lsock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("socket");
-        exit(1);
-    }
-    int y = 1;
-    setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int));
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons((short)port);
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (bind(lsock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        perror("bind");
-        if (close(lsock) < 0) perror("close");
-        exit(1);
-    }
+    init_state(atoi(argv[2]));
 
-    if (listen(lsock, 100) < 0) {
-        perror("listen");
-        if (close(lsock) < 0) perror("close");
-        exit(1);
-    }
+    pthread_t listener = start_listener(atoi(argv[1]), &player_join);
+    printf("created listener\n");
 
-    fprintf(stderr, "listening on port %d\n", port);
-
-    while (1) {
-        int csock;
-        struct sockaddr_in client_addr;
-        socklen_t client_len = sizeof(client_addr);
-
-        if ((csock = accept(lsock, (struct sockaddr *)&client_addr,
-                            &client_len)) < 0) {
-            perror("accept");
-            continue;
-        }
-
-        fprintf(stderr, "received connection from %s#%hu\n",
-                inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
-
-        FILE *cxstr;
-        if (!(cxstr = fdopen(csock, "w+"))) {
-            perror("fdopen");
-            if (close(csock) < 0) perror("close");
-            continue;
-        }
-        
-        printf("ready to read\n");
-    }
-
+    pause();    
     return 0;
 }
 
+void player_join(FILE *io) {
+    printf("new client !\n");
+}
+
+int add_player(player_t *p) {
+    int ret = 0;
+
+    pthread_mutex_lock(&state.mutex);
+    if (state.num_players == state.max_players) { ret = 1; }
+    else { 
+        state.num_players++;
+        players[state.num_players - 1]
+    }
+    
+    pthread_mutex_unlock(&state.mutex);
+    return ret;
+
+}
+
+void remove_player(player_t *p) {
+
+}
 
 /* Return true iff a beam shot from origin in direction will
    collide with player */

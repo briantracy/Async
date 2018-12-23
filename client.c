@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    FILE *cxn = fdopen(s, "rw");
+    FILE *cxn = fdopen(s, "r+");
     fputs("abcdef", cxn);
     
     return 0;

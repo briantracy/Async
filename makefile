@@ -6,10 +6,10 @@ EXECS = client server
 
 all: $(EXECS)
 
-client: client.c
+client: client.c network.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-server: server.c
+server: server.c network.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 clean:
