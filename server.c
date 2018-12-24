@@ -58,6 +58,12 @@ int main(int argc, char *argv[]) {
 
 void player_joined(FILE *io) {
     printf("new player\n");
+    char buff[24];
+    fgets(buff, 24, io);
+    printf("[%s]\n", buff);
+    int i = fputs("I 12\n", io);
+    fflush(io);
+    printf("sent[%d]\n", i);
 }
 
 player_t *add_player(char *name) {
@@ -91,3 +97,4 @@ int hit_test(player_t *p, point_t o, direction_t d) {
     }
     return 0;
 }
+

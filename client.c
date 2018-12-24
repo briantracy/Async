@@ -15,44 +15,11 @@
 #include <sys/uio.h>
 #include <sys/wait.h>
 
+#include "messages.h"
+#include "network.h"
 
-int get_socket(const char *server, const char *port) {
-    // setup for getaddrinfo
-    int sock;
-    struct addrinfo hints;
-    struct addrinfo *result;
 
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-
-    int err;
-    if ((err = getaddrinfo(server, port, &hints, &result)) != 0) {
-        fprintf(stderr, "Error in getaddrinfo: %s\n", gai_strerror(err));
-        return -1;
-    }
-
-    // find the right interface
-    struct addrinfo *res;
-    for (res = result; res != NULL; res = res->ai_next) {
-        if ((sock = socket(res->ai_family, res->ai_socktype,
-                           res->ai_protocol)) < 0) {
-            continue;
-        }
-        if (connect(sock, res->ai_addr, res->ai_addrlen) >= 0) {
-            break;
-        }
-        close(sock);
-    }
-
-    freeaddrinfo(result);
-
-    if (res == NULL) {
-        return -1;
-    }
-
-    return sock;
-}
+int handshake(FILE *);
 
 int usage() {
     printf("usage: async-client -n <player-name> -h <hostname> -p <port>\n");
@@ -84,10 +51,26 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    FILE *cxn = fdopen(sock, "r+");
-    fputs("abcdef", cxn);
+    FILE *io = fdopen(sock, "r+");
+    if (io == NULL) {
+        fprintf(stdout, "could not open socket\n");
+        return 1;
+    }
+    
+    handshake(io);
     
     return 0;
+}
+
+int handshake(FILE *io) {
+    fputs("N name\n", io);
+    printf("sent\n");
+    char id[10];
+        printf("waiting for fgets\n");
+        fgets(id, 10, io);
+        printf("id: [%s]\n", id);
+    printf("done\n");
+    return 1;
 }
 
 void x() {

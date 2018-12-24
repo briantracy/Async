@@ -9,6 +9,20 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <sys/wait.h>
+
+
 #include "network.h"
 
 /* Serverside I/O functions */
@@ -85,6 +99,45 @@ void *listener(void (*server)(FILE *)) {
 
     return NULL;
 }
+
+int get_socket(const char *server, const char *port) {
+    // setup for getaddrinfo
+    int sock;
+    struct addrinfo hints;
+    struct addrinfo *result;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    int err;
+    if ((err = getaddrinfo(server, port, &hints, &result)) != 0) {
+        fprintf(stderr, "Error in getaddrinfo: %s\n", gai_strerror(err));
+        return -1;
+    }
+
+    // find the right interface
+    struct addrinfo *res;
+    for (res = result; res != NULL; res = res->ai_next) {
+        if ((sock = socket(res->ai_family, res->ai_socktype,
+                           res->ai_protocol)) < 0) {
+            continue;
+        }
+        if (connect(sock, res->ai_addr, res->ai_addrlen) >= 0) {
+            break;
+        }
+        close(sock);
+    }
+
+    freeaddrinfo(result);
+
+    if (res == NULL) {
+        return -1;
+    }
+
+    return sock;
+}
+
 
 void comm_shutdown(FILE *cxstr) {
     if (fclose(cxstr) < 0) perror("fclose");

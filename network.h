@@ -13,6 +13,8 @@
     } while (0)
 
 pthread_t start_listener(int port, void (*serve_func)(FILE *));
+
+int get_socket(const char *server, const char *port);
 void comm_shutdown(FILE *cxstr);
 int comm_serve(FILE *cxstr, char *resp, char *cmd);
 
