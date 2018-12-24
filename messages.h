@@ -10,6 +10,7 @@
  * > N cool name
  */
 #define H_NAME 'N'
+#define NAME_LEN 32
 
 /* S -> C: server gives client an id
  * > I 12

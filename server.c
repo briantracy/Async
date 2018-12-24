@@ -16,9 +16,12 @@
 #include "server.h"
 #include "common.h"
 #include "network.h"
+#include "messages.h"
 
 
 server_state_t state;
+
+int handshake(FILE *);
 
 int usage() {
     printf("usage: async-server -p <port> -n <num-players> -w <board-width> -h <board-height>\n");
@@ -49,8 +52,9 @@ int main(int argc, char *argv[]) {
     state.port = port;
     state.width = width;
     state.height = height;
-
-    pthread_t listener = start_listener(state.port, &player_joined);
+    
+    generate_map();
+    //pthread_t listener = start_listener(state.port, &player_joined);
 
     pause();
     return 0;
@@ -64,6 +68,12 @@ void player_joined(FILE *io) {
     int i = fputs("I 12\n", io);
     fflush(io);
     printf("sent[%d]\n", i);
+}
+
+int handshake(FILE *io) {
+    // 1. Read players name
+    char name[NAME_LEN];
+    return 0;
 }
 
 player_t *add_player(char *name) {
@@ -83,6 +93,33 @@ player_t *add_player(char *name) {
 
 void remove_player(player_t *p) {
 
+}
+
+/* Game Logic */
+
+void generate_map() {
+    assert(state.width > 5 && state.height > 5);
+    if (state.map != NULL) { free(state.map); }
+
+    state.map = malloc(sizeof(char) * state.width * state.height);
+    memset(state.map, ' ', state.width * state.height);
+
+    for (int x = 0; x < state.width; x++) {
+        set_char(state.map, x, 0, state.width, '#');
+        set_char(state.map, x, state.height - 1, state.width, '#');
+        //state.map[0 * state.width + x] = '#';
+        //state.map[(state.height - 1) * state.width + x] = '#';
+    }
+    for (int y = 0; y < state.height; y++) {
+        set_char(state.map, 0, y, state.width, '#');
+        set_char(state.map, state.width - 1, y, state.width, '#');
+        //state.map[y * state.width + 0] = '#';
+        //state.map[y * state.width + (state.width - 1)] = '#';
+    }
+
+    set_char(state.map, 20, 1, state.width, '&');
+
+    print_map(state.map, state.width, state.height);
 }
 
 /* Return true iff a beam shot from origin in direction will

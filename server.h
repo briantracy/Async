@@ -20,7 +20,9 @@ typedef struct {
     int num_players;
 
     int port;
-    int width, height; 
+    int width, height;
+
+    char *map;
 
     pthread_mutex_t mutex;
 } server_state_t;
@@ -32,7 +34,7 @@ void remove_player(player_t *);
 
 /* Game Logic */
 int hit_test(player_t *, point_t, direction_t);
-
+void generate_map();
 
 #endif /* ASYNC_SERVER_H */
 

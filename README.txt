@@ -53,3 +53,11 @@
     async is written in c99 and requires no external dependencies except what you would
     usually find on any linux install (ncurses, pthread, arpanet).
 
+
+Implementation
+==============
+Client server handshake is as follows. 
+> N <player name>
+< I <players unique id>
+< Z <map size>
+< <raw map data>
