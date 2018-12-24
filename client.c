@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 }
 
 int handshake(FILE *io) {
-    fputs("N name\n", io);
+    fputs("N yosef\n", io);
     printf("sent\n");
     char id[10];
         printf("waiting for fgets\n");

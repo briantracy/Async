@@ -21,7 +21,6 @@
 
 server_state_t state;
 
-int handshake(FILE *);
 
 int usage() {
     printf("usage: async-server -p <port> -n <num-players> -w <board-width> -h <board-height>\n");
@@ -49,50 +48,69 @@ int main(int argc, char *argv[]) {
     
     state.num_players = 0;
     state.max_players = players;
+    state.players = malloc(sizeof(player_t) * state.max_players);
     state.port = port;
     state.width = width;
     state.height = height;
     
     generate_map();
-    //pthread_t listener = start_listener(state.port, &player_joined);
+    pthread_t listener = start_listener(state.port, &player_joined);
 
     pause();
     return 0;
 }
 
 void player_joined(FILE *io) {
-    printf("new player\n");
+   /* printf("new player\n");
     char buff[24];
     fgets(buff, 24, io);
     printf("[%s]\n", buff);
     int i = fputs("I 12\n", io);
     fflush(io);
-    printf("sent[%d]\n", i);
+    printf("sent[%d]\n", i);*/
+    char buff[NAME_LEN];
+    fgets(buff, NAME_LEN, io);
+    char *name = extract_message(buff);
+    printf("name: [%s]\n", name);
+    player_t *player = add_player(name);
+    if (player == NULL) {
+        printf("could not init player\n");
+        pthread_exit(NULL);
+    }
+    player->name = name;
+    printf("new player: name = [%s], id = [%d]\n", player->name, player->id);
 }
 
-int handshake(FILE *io) {
-    // 1. Read players name
-    char name[NAME_LEN];
+int transfer_initial_data(FILE *io) {
+    
     return 0;
 }
 
 player_t *add_player(char *name) {
-    int ret = 0;
+    player_t *ret = NULL;
 
     pthread_mutex_lock(&state.mutex);
-    if (state.num_players == state.max_players) { ret = 1; }
-    else { 
+    if (state.num_players != state.max_players) {
+        state.players[state.num_players - 1].id = state.num_players;
+        ret = &state.players[state.num_players - 1];
         state.num_players++;
-        state.players[state.num_players - 1].id = 0;
     }
     
     pthread_mutex_unlock(&state.mutex);
     
-    return NULL;
+    return ret;
 }
 
 void remove_player(player_t *p) {
 
+}
+
+char *extract_message(char *raw) {
+    char *n = strchr(raw, '\n');
+    if (n != NULL) {
+        *n = '\0';
+    }
+    return &raw[2];
 }
 
 /* Game Logic */

@@ -10,7 +10,8 @@ typedef struct {
     point_t loc;
     char *name;
     FILE *stream;
-
+    
+    pthread_mutex_t loc_mutex;
     pthread_mutex_t stream_mutex;
 } player_t;
 
@@ -31,6 +32,10 @@ typedef struct {
 void player_joined(FILE *);
 player_t *add_player(char *);
 void remove_player(player_t *);
+
+int transfer_initial_data(FILE *);
+
+char *extract_message(char *);
 
 /* Game Logic */
 int hit_test(player_t *, point_t, direction_t);
