@@ -25,9 +25,9 @@ int usage() {
     printf("usage: async-client -n <player-name> -h <hostname> -p <port>\n");
     return 1;
 }
-
+void x();
 int main(int argc, char *argv[]) {
-
+    
     const int num_args = 7;
     char name[16], host[32], port[32];
     int ch;
@@ -78,14 +78,16 @@ void x() {
     initscr();
     noecho();
     curs_set(FALSE);
+    
+    //mvaddstr(3, 3, "\033[1;31mred\033[0;0m");
 
-    while (1) {
+   /* while (1) {
         mvaddstr(3, 3, "getting key\n");
         int k = getch();
         printf("k = %c\n", (char)k);
         if (k == 'a') break;
         sleep(1);
-    }
+    }*/
 
 /*char c = 'a';
 while (1) {
@@ -106,7 +108,7 @@ sleep(1);
     refresh();
 
 
-   // pause();
+    pause();
     endwin();
     printf("done\n");
 }

@@ -107,14 +107,10 @@ void generate_map() {
     for (int x = 0; x < state.width; x++) {
         set_char(state.map, x, 0, state.width, '#');
         set_char(state.map, x, state.height - 1, state.width, '#');
-        //state.map[0 * state.width + x] = '#';
-        //state.map[(state.height - 1) * state.width + x] = '#';
     }
     for (int y = 0; y < state.height; y++) {
         set_char(state.map, 0, y, state.width, '#');
         set_char(state.map, state.width - 1, y, state.width, '#');
-        //state.map[y * state.width + 0] = '#';
-        //state.map[y * state.width + (state.width - 1)] = '#';
     }
 
     set_char(state.map, 20, 1, state.width, '&');

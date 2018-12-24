@@ -57,7 +57,7 @@
 Implementation
 ==============
 Client server handshake is as follows. 
-> N <player name>
-< I <players unique id>
-< Z <map size>
-< <raw map data>
+C->S: N <player name> (player tells server its name)
+S->C: I <players unique id> (server gives player a unique id)
+S->C: Z <map size> (server gives player the map size)
+S->C: <raw map data> (server gives palayer map data)
