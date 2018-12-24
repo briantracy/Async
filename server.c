@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
     pthread_t listener = start_listener(atoi(argv[1]), &player_joined);
 
-    pause();    
+    pause();
     return 0;
 }
 
@@ -46,6 +46,7 @@ void player_joined(FILE *io) {
 }
 
 int add_player(player_t *p) {
+    assert(p != NULL);
     int ret = 0;
 
     pthread_mutex_lock(&state.mutex);
