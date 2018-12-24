@@ -20,45 +20,59 @@
 
 server_state_t state;
 
+int usage() {
+    printf("usage: async-server -p <port> -n <num-players> -w <board-width> -h <board-height>\n");
+    return 1;
+}
+
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        printf("usage: server <port> <players>\n");
-        return 1;
+    const int num_args = 9;
+    int port, players, width, height;
+    int ch;
+
+    if (argc != num_args) { return usage(); }
+    
+    while ((ch = getopt(argc, argv, "p:n:w:h:")) != -1) {
+        printf("[%c] -> [%s]\n", ch, optarg);
+        switch (ch) {
+        case 'p': { port = atoi(optarg); break; }
+        case 'n': { players = atoi(optarg); break; }
+        case 'w': { width = atoi(optarg); break; }
+        case 'h': { height = atoi(optarg); break; }
+        default: { return usage(); }
+        }
     }
+    if (optind != num_args) { return usage(); }
+    
+    state.num_players = 0;
+    state.max_players = players;
+    state.port = port;
+    state.width = width;
+    state.height = height;
 
-    init_state(atoi(argv[2]));
-
-    pthread_t listener = start_listener(atoi(argv[1]), &player_joined);
+    pthread_t listener = start_listener(state.port, &player_joined);
 
     pause();
     return 0;
 }
 
-void init_state(int max_players) {
-    state.num_players = 0;
-    state.max_players = max_players;
-    state.players = malloc(sizeof(player_t) * max_players);
-    pthread_mutex_init(&state.mutex, NULL);
-}
-
 void player_joined(FILE *io) {
-    printf("new client !\n");
+    printf("new player\n");
 }
 
-int add_player(player_t *p) {
-    assert(p != NULL);
+player_t *add_player(char *name) {
     int ret = 0;
 
     pthread_mutex_lock(&state.mutex);
     if (state.num_players == state.max_players) { ret = 1; }
     else { 
         state.num_players++;
-        players[state.num_players - 1]
+        state.players[state.num_players - 1].id = 0;
     }
     
     pthread_mutex_unlock(&state.mutex);
-    return ret;
-
+    
+    return NULL;
 }
 
 void remove_player(player_t *p) {

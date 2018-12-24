@@ -14,7 +14,6 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
 
 int get_socket(const char *server, const char *port) {
@@ -49,23 +48,43 @@ int get_socket(const char *server, const char *port) {
     freeaddrinfo(result);
 
     if (res == NULL) {
-        fprintf(stderr, "Failed to connect to '%s'!\n", server);
         return -1;
     }
 
     return sock;
 }
 
+int usage() {
+    printf("usage: async-client -n <player-name> -h <hostname> -p <port>\n");
+    return 1;
+}
+
 int main(int argc, char *argv[]) {
-    
-    int s = get_socket(argv[1], argv[2]);
-    if (s == -1) {
-     
-       printf("could not get socket\n");
-        return 0;
+
+    const int num_args = 7;
+    char name[16], host[32], port[32];
+    int ch;
+
+    if (argc != num_args) { return usage(); }
+
+    while ((ch = getopt(argc, argv, "n:h:p:")) != -1) {
+        printf("[%c] -> [%s]\n", ch, optarg);
+        switch (ch) {
+        case 'n': { strcpy(name, optarg); break; }
+        case 'h': { strcpy(host, optarg); break; }
+        case 'p': { strcpy(port, optarg); break; }
+        default: { return usage(); }
+        }
+    }
+    if (optind != num_args) { return usage(); }
+
+    int sock = get_socket(host, port);
+    if (sock == -1) {
+        fprintf(stdout, "could not connect to %s:%s\n", host, port);
+        return 1;
     }
 
-    FILE *cxn = fdopen(s, "r+");
+    FILE *cxn = fdopen(sock, "r+");
     fputs("abcdef", cxn);
     
     return 0;

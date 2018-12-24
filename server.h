@@ -16,16 +16,18 @@ typedef struct {
 
 typedef struct {
     player_t *players;
-    unsigned int max_players;
-    unsigned int num_players;
+    int max_players;
+    int num_players;
+
+    int port;
+    int width, height; 
 
     pthread_mutex_t mutex;
 } server_state_t;
 
-void init_state(int);
 
 void player_joined(FILE *);
-int add_player(char *);
+player_t *add_player(char *);
 void remove_player(player_t *);
 
 /* Game Logic */
