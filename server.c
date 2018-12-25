@@ -60,8 +60,19 @@ int main(int argc, char *argv[]) {
 }
 
 void player_joined(FILE *io) {
+    // Client starts handshake with name. 
+    char buff[NAME_LEN];
+    fgets(buff, NAME_LEN, io);
+    char *name = extract_message(buff);
+    player_t *player = add_player(name);
+    if (player == NULL) {
+        printf("could not init player\n");
+        pthread_exit(NULL);
+    }
+    printf("new player: name = [%s], id = [%d]\n", player->name, player->id);
+
     char id_buff[ID_LEN];
-    snprintf(id_buff, ID_LEN, "%c %d\n", H_ID, 4);
+    snprintf(id_buff, ID_LEN, "%c %d\n", H_ID, player->id);
     fputs(id_buff, io);
 
     char size_buff[SIZE_LEN];
@@ -75,45 +86,6 @@ void player_joined(FILE *io) {
     fputs(map_buff, io);
     
     fflush(io);
-    //fputs("Z (12,12)\n", io);
-    //printf("[%s]\n", state.map);
-    //char j[1000];
-    //snprintf(j, 1000, "%s\n", state.map);
-    //fputs(j, io);
-    //fputs("\n", io);
-    //fflush(io);
-    return ;
-   /* printf("new player\n");
-    char buff[24];
-    fgets(buff, 24, io);
-    printf("[%s]\n", buff);
-    int i = fputs("I 12\n", io);
-    fflush(io);
-    printf("sent[%d]\n", i);*/
-    char buff[NAME_LEN];
-    fgets(buff, NAME_LEN, io);
-    char *name = extract_message(buff);
-    printf("name: [%s]\n", name);
-    player_t *player = add_player(name);
-    if (player == NULL) {
-        printf("could not init player\n");
-        pthread_exit(NULL);
-    }
-    player->name = name;
-    printf("new player: name = [%s], id = [%d]\n", player->name, player->id);
-    fputs("N 10\n", io);
-    fflush(io);
-    fputs("Z (40,20)\n", io);
-    fflush(io);
-    fputs("asdf\n", io);
-    fflush(io);
-    printf("sent map\n");
-    /*printf("map[%s]\n", state.map);
-    char b[400];
-    snprintf(b, 400, "map:%s\n", "yeezus");
-    fputs(b, io);
-    fflush(io);
-    */
 }
 
 int transfer_initial_data(FILE *io) {
@@ -126,8 +98,9 @@ player_t *add_player(char *name) {
 
     pthread_mutex_lock(&state.mutex);
     if (state.num_players != state.max_players) {
-        state.players[state.num_players - 1].id = state.num_players;
         ret = &state.players[state.num_players - 1];
+        ret->id = state.num_players;
+        ret->name = name;
         state.num_players++;
     }
     

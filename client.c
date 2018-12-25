@@ -77,29 +77,22 @@ int receive_initial_data(FILE *io) {
     fgets(id_buff, ID_LEN, io);
     char *id_str = extract_message(id_buff);
     printf("id_str=[%s]\n", id_str);
-    char buff[1000];
-    //fgets(buff, 1000, io);
-    //printf("[%s]\n", buff);
-    fgets(buff, 1000, io);
-    printf("[%s]\n", buff);
-    fgets(buff, 1000, io);
-    printf("[%s]\n", buff);
-    print_map(buff, 60, 6);
-    return 0;
-    char id[10];
-    fgets(id, 10, io);
-    printf("id: [%s]\n", id);
-    char size[10];
-    fgets(size, 10, io);
-    char *map_size = extract_message(size);
-    printf("mapsize: [%s]\n", map_size);
 
-    char map[20];
-    fgets(map, 20, io);
-    printf("map[%s]\n", map);
-    printf("maplen: %d\n", strlen(map));
-    printf("done\n");
-    return 0;
+    char size_buff[SIZE_LEN];
+    fgets(size_buff, SIZE_LEN, io);
+    char *size_tuple = extract_message(size_buff);
+    printf("map_size=[%s]\n", size_tuple);
+
+    int width, height;
+    sscanf(size_tuple, "(%d,%d)", &width, &height);
+    printf("map size = %d x %d\n", width, height);
+
+    char map[width * height];
+    fgets(map, width * height + 1, io);
+
+    print_map(map, width, height);   
+
+    return 1;
 }
 
 void x() {
