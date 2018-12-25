@@ -61,3 +61,6 @@ C->S: N <player name> (player tells server its name)
 S->C: I <players unique id> (server gives player a unique id)
 S->C: Z <map size> (server gives player the map size)
 S->C: <raw map data> (server gives palayer map data)
+
+If the game is full, or something else goes wrong, the server will let the client
+know when it sends back the id.
