@@ -1,6 +1,17 @@
 #ifndef _ASYNC_MESSAGES_H
 #define _ASYNC_MESSAGES_H
 
+
+
+char *extract_message(char *raw) {
+    char *n = strchr(raw, '\n');
+    if (n != NULL) {
+        *n = '\0';
+    }
+    return &raw[2];
+}
+
+
 /*
     All network communication takes place on a line per line basis.
     Lines start with a single character identifying the format.
@@ -16,6 +27,10 @@
  * > I 12
  */
 #define H_ID 'I'
+#define ID_LEN 8
+
+#define H_SIZE 'Z'
+#define SIZE_LEN 16
 
 /* S -> C: message from the server
  * > L player one killed player two

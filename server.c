@@ -35,7 +35,6 @@ int main(int argc, char *argv[]) {
     if (argc != num_args) { return usage(); }
     
     while ((ch = getopt(argc, argv, "p:n:w:h:")) != -1) {
-        printf("[%c] -> [%s]\n", ch, optarg);
         switch (ch) {
         case 'p': { port = atoi(optarg); break; }
         case 'n': { players = atoi(optarg); break; }
@@ -61,6 +60,29 @@ int main(int argc, char *argv[]) {
 }
 
 void player_joined(FILE *io) {
+    char id_buff[ID_LEN];
+    snprintf(id_buff, ID_LEN, "%c %d\n", H_ID, 4);
+    fputs(id_buff, io);
+
+    char size_buff[SIZE_LEN];
+    snprintf(size_buff, SIZE_LEN, "%c (%d,%d)\n", H_SIZE, state.width, state.height);
+    fputs(size_buff, io);
+
+    // 1 char per map cell + newline + '\0'
+    const size_t map_buff_size = state.width * state.height + 2;
+    char map_buff[map_buff_size];
+    snprintf(map_buff, map_buff_size, "%s\n", state.map);
+    fputs(map_buff, io);
+    
+    fflush(io);
+    //fputs("Z (12,12)\n", io);
+    //printf("[%s]\n", state.map);
+    //char j[1000];
+    //snprintf(j, 1000, "%s\n", state.map);
+    //fputs(j, io);
+    //fputs("\n", io);
+    //fflush(io);
+    return ;
    /* printf("new player\n");
     char buff[24];
     fgets(buff, 24, io);
@@ -79,6 +101,19 @@ void player_joined(FILE *io) {
     }
     player->name = name;
     printf("new player: name = [%s], id = [%d]\n", player->name, player->id);
+    fputs("N 10\n", io);
+    fflush(io);
+    fputs("Z (40,20)\n", io);
+    fflush(io);
+    fputs("asdf\n", io);
+    fflush(io);
+    printf("sent map\n");
+    /*printf("map[%s]\n", state.map);
+    char b[400];
+    snprintf(b, 400, "map:%s\n", "yeezus");
+    fputs(b, io);
+    fflush(io);
+    */
 }
 
 int transfer_initial_data(FILE *io) {
@@ -105,13 +140,6 @@ void remove_player(player_t *p) {
 
 }
 
-char *extract_message(char *raw) {
-    char *n = strchr(raw, '\n');
-    if (n != NULL) {
-        *n = '\0';
-    }
-    return &raw[2];
-}
 
 /* Game Logic */
 

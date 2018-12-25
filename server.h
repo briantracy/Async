@@ -35,7 +35,6 @@ void remove_player(player_t *);
 
 int transfer_initial_data(FILE *);
 
-char *extract_message(char *);
 
 /* Game Logic */
 int hit_test(player_t *, point_t, direction_t);

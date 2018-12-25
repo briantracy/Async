@@ -15,11 +15,12 @@
 #include <sys/uio.h>
 #include <sys/wait.h>
 
+#include "client.h"
 #include "messages.h"
 #include "network.h"
+#include "common.h"
 
 
-int handshake(FILE *);
 
 int usage() {
     printf("usage: async-client -n <player-name> -h <hostname> -p <port>\n");
@@ -56,21 +57,49 @@ int main(int argc, char *argv[]) {
         fprintf(stdout, "could not open socket\n");
         return 1;
     }
+
+    char buff[NAME_LEN];
+    snprintf(buff, NAME_LEN, "N %s\n", name);
+    fputs(buff, io);
+    fflush(io);
     
-    handshake(io);
-    
+    if (receive_initial_data(io) != 0) {
+        printf("Too many players\n");
+        return 1;
+    }
     return 0;
 }
 
-int handshake(FILE *io) {
-    fputs("N yosef\n", io);
-    printf("sent\n");
+/* Get from the server our unique ID, the map size, map data */
+int receive_initial_data(FILE *io) {
+    
+    char id_buff[ID_LEN];
+    fgets(id_buff, ID_LEN, io);
+    char *id_str = extract_message(id_buff);
+    printf("id_str=[%s]\n", id_str);
+    char buff[1000];
+    //fgets(buff, 1000, io);
+    //printf("[%s]\n", buff);
+    fgets(buff, 1000, io);
+    printf("[%s]\n", buff);
+    fgets(buff, 1000, io);
+    printf("[%s]\n", buff);
+    print_map(buff, 60, 6);
+    return 0;
     char id[10];
-        printf("waiting for fgets\n");
-        fgets(id, 10, io);
-        printf("id: [%s]\n", id);
+    fgets(id, 10, io);
+    printf("id: [%s]\n", id);
+    char size[10];
+    fgets(size, 10, io);
+    char *map_size = extract_message(size);
+    printf("mapsize: [%s]\n", map_size);
+
+    char map[20];
+    fgets(map, 20, io);
+    printf("map[%s]\n", map);
+    printf("maplen: %d\n", strlen(map));
     printf("done\n");
-    return 1;
+    return 0;
 }
 
 void x() {
