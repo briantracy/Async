@@ -12,7 +12,7 @@
     same server as you. The goal is to be the last ship alive.
 
 15,000ft:
-    To move, press a directional key (WASD) and to shoot press (SPACE). There
+    To move, press a directional key (WASD) and to shoot press J. There
     is no ammo limit, but there is a firing cooldown. The shots you fire are
     called beams and they are a one hit kill against enemy ships.
 
@@ -53,6 +53,21 @@
     async is written in c99 and requires no external dependencies except what you would
     usually find on any linux install (ncurses, pthread, arpanet).
 
+2ft:
+    To start an async-server, run async-server and specify the number of players, the port
+    on which you want to accept clients, and the size of the arena. Then players can point
+    their clients at this server to join.
+
+0ft:
+    Now that you know the rules and how to play, see below for the technical details on how
+    to get async and async-server up and running.
+
+
+    +-------------------------------------+
+    | Technical Details - Getting Started |
+    +-------------------------------------+
+
+1. Compile the source
 
 Implementation
 ==============

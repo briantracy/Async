@@ -14,3 +14,4 @@ server: server.c network.c
 
 clean:
 	rm $(EXECS)
+

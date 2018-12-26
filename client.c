@@ -82,6 +82,8 @@ int main(int argc, char *argv[]) {
     if (!download_map()) {
         fprintf(stderr, "async: could not download map\n");
         return 1;
+    } else {
+        printf("async: downloaded map, `%lu` bytes\n", strlen(game.map));
     }
 
     return 0;
@@ -100,25 +102,25 @@ int receive_id() {
     char buff[msg_len];
     if (fgets(buff, msg_len, game.io) == NULL) { return 0; }
     char *id_str = extract_message(buff);
+    if (strcmp(id_str, "err") == 0) { return 0; }
     game.id = atoi(id_str);
     return 1;
 }
 
 int download_map() {
-    
-}
+    const int size_buff_len = SIZE_LEN + 4;
+    char buff[size_buff_len];
+    if (fgets(buff, size_buff_len, game.io) == NULL) { return 0; }
+    char *size_tuple = extract_message(buff);
+    sscanf(size_tuple, "(%d,%d)", &game.width, &game.height);
 
-/* Get from the server our unique ID, the map size, map data */
-int receive_initial_data(FILE *io) {
-    
-    char id_buff[ID_LEN];
-    fgets(id_buff, ID_LEN, io);
-    char *id_str = extract_message(id_buff);
-    printf("id_str=[%s]\n", id_str);
-
-
+    const int map_buff_size = sizeof(char) * game.width * game.height + 1;
+    game.map = malloc(map_buff_size);
+    if (fgets(game.map, map_buff_size, game.io) == NULL) { return 0; }
+    print_map(game.map, game.width, game.height);
     return 1;
 }
+
 
 void x() {
 

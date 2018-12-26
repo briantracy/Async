@@ -53,4 +53,9 @@ char *extract_message(char *raw) {
 // (xxx,yyy) repeated ~ 20 times = 256
 #define POSITION_LEN 256
 
+#define H_SIZE 'Z'
+#define SIZE_LEN 16
+
+#define SERVER_ERROR "E err\n"
+
 #endif

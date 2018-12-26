@@ -60,26 +60,37 @@ int main(int argc, char *argv[]) {
 }
 
 void player_joined(FILE *io) {
-    // Client starts handshake with name. 
-    char buff[NAME_LEN];
-    fgets(buff, NAME_LEN, io);
+    // Client starts handshake with name.
+    const int name_buff_len = NAME_LEN + 4;
+    char buff[name_buff_len];
+    fgets(buff, name_buff_len, io);
     char *name = extract_message(buff);
     player_t *player = add_player(name);
     if (player == NULL) {
-        printf("could not init player\n");
+        fprintf(stderr, "could not create new player\n");
+        fputs(SERVER_ERROR, io);
+        fflush(io);
         pthread_exit(NULL);
     }
-    printf("new player: name = [%s], id = [%d]\n", player->name, player->id);
+    printf("new player: name = `%s`, id = `%d`\n", player->name, player->id);
 
-    char id_buff[ID_LEN];
-    snprintf(id_buff, ID_LEN, "%c %d\n", H_ID, player->id);
+    const int id_buff_len = ID_LEN + 4;
+    char id_buff[id_buff_len];
+    snprintf(id_buff, id_buff_len, "%c %d\n", H_ID, player->id);
     fputs(id_buff, io);
+    fflush(io);
 
+    const int size_buff_len = SIZE_LEN + 4;
+    char size_buff[size_buff_len];
+    snprintf(size_buff, size_buff_len, "%c (%d,%d)\n", H_SIZE, state.width, state.height);
+    fputs(size_buff, io);
+    fflush(io);
 
     // 1 char per map cell + newline + '\0'
     const size_t map_buff_size = state.width * state.height + 2;
     char map_buff[map_buff_size];
     snprintf(map_buff, map_buff_size, "%s\n", state.map);
+    print_map(map_buff, state.width, state.height);
     fputs(map_buff, io);
     
     fflush(io);
