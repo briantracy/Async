@@ -75,9 +75,6 @@ void player_joined(FILE *io) {
     snprintf(id_buff, ID_LEN, "%c %d\n", H_ID, player->id);
     fputs(id_buff, io);
 
-    char size_buff[SIZE_LEN];
-    snprintf(size_buff, SIZE_LEN, "%c (%d,%d)\n", H_SIZE, state.width, state.height);
-    fputs(size_buff, io);
 
     // 1 char per map cell + newline + '\0'
     const size_t map_buff_size = state.width * state.height + 2;
