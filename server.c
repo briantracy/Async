@@ -92,8 +92,12 @@ void player_joined(FILE *io) {
     snprintf(map_buff, map_buff_size, "%s\n", state.map);
     print_map(map_buff, state.width, state.height);
     fputs(map_buff, io);
-    
     fflush(io);
+    
+    char msg[100];
+    while (fgets(msg, 100, io) != NULL) {
+        printf("`%s`\n", msg);
+    }
 }
 
 int transfer_initial_data(FILE *io) {
@@ -139,7 +143,8 @@ void generate_map() {
         set_char(state.map, 0, y, state.width, '#');
         set_char(state.map, state.width - 1, y, state.width, '#');
     }
-
+    
+    set_char(state.map, 4, 4, state.width, '#');
 
     print_map(state.map, state.width, state.height);
 }

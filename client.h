@@ -27,6 +27,8 @@ void move_player(direction_t);
 void fire();
 void render();
 
+void quit_game(int);
+
 #define HOST_LEN 64
 #define PORT_LEN 32
 

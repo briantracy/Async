@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #include "client.h"
 #include "messages.h"
@@ -28,6 +29,7 @@ int usage() {
 }
 
 game_t game;
+
 
 int main(int argc, char *argv[]) {
 
@@ -50,6 +52,8 @@ int main(int argc, char *argv[]) {
     name[NAME_LEN] = '\0';
     host[HOST_LEN] = '\0';
     port[PORT_LEN] = '\0';
+
+    signal(SIGINT, &quit_game);
 
     int sock = get_socket(host, port);
     if (sock == -1) {
@@ -86,13 +90,19 @@ int main(int argc, char *argv[]) {
     } else {
         printf("async: downloaded map, `%lu` bytes\n", strlen(game.map));
     }
-    
     game.player_loc.x = game.width / 2;
     game.player_loc.y = game.height / 2;
     game.player_dir = NORTH;
     run_game();    
 
     return 0;
+}
+
+void quit_game(int sig) {
+    endwin();
+    fflush(game.io);
+    fclose(game.io);
+    exit(sig);
 }
 
 void run_game() {
@@ -121,33 +131,40 @@ void get_input() {
 void move_player(direction_t dir) {
     unsigned int x = game.player_loc.x;
     unsigned int y = game.player_loc.y;
+    int success = 0;
     switch (dir) {
     case NORTH: { 
         if (get_char(game.map, x, y - 1, game.width) != '#') {
-            game.player_loc.y--;
+            game.player_loc.y--; success = 1;
         }
         break;
     }
     case EAST:  { 
         if (get_char(game.map, x + 1, y, game.width) != '#') {
-            game.player_loc.x++;
+            game.player_loc.x++; success = 1;
         }
         break;
     }
     case SOUTH: { 
         if (get_char(game.map, x, y + 1, game.width) != '#') {            
-            game.player_loc.y++;
+            game.player_loc.y++; success = 1;
         }
         break;
     }
     case WEST:  { 
         if (get_char(game.map, x - 1, y, game.width) != '#') {        
-            game.player_loc.x--;
+            game.player_loc.x--; success = 1;
         }
         break;
     }
     }
     game.player_dir = dir;
+    if (!success) { return; }
+    char buff[MOVE_LEN];
+    snprintf(buff, MOVE_LEN, "%c (%d,%d)\n", H_MOVE,
+                    game.player_loc.x, game.player_loc.y);
+    fputs(buff, game.io);
+    fflush(game.io);
 }
 
 void fire() {
@@ -160,7 +177,7 @@ void render() {
             mvaddch(y, x, get_char(game.map, x, y, game.width));
         }
     }
-   mvaddch(game.player_loc.y, game.player_loc.x, dir_to_symbol(game.player_dir));
+    mvaddch(game.player_loc.y, game.player_loc.x, dir_to_symbol(game.player_dir));
 }
 
 /* msg_len = <char><space><field length><\n><\0> */
@@ -187,7 +204,7 @@ int download_map() {
     if (fgets(buff, size_buff_len, game.io) == NULL) { return 0; }
     char *size_tuple = extract_message(buff);
     sscanf(size_tuple, "(%d,%d)", &game.width, &game.height);
-    printf("game width = (%d,%d)\n", game.width, game.height);
+    
     const int map_buff_size = sizeof(char) * game.width * game.height + 1;
     game.map = malloc(map_buff_size);
     if (fgets(game.map, map_buff_size, game.io) == NULL) { return 0; }
