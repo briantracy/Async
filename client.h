@@ -2,6 +2,7 @@
 #define _ASYNC_CLIENT_H
 
 #include "common.h"
+#include <assert.h>
 
 typedef struct {
     unsigned int width, height;
@@ -20,6 +21,12 @@ int send_name();
 int receive_id();
 int download_map();
 
+void run_game();
+void get_input();
+void move_player(direction_t);
+void fire();
+void render();
+
 #define HOST_LEN 64
 #define PORT_LEN 32
 
@@ -27,6 +34,16 @@ int download_map();
 #define PLAYER_RIGHT '>'
 #define PLAYER_UP    '^'
 #define PLAYER_DOWN  'v'
+
+char dir_to_symbol(direction_t dir) {
+    switch (dir) {
+    case NORTH: return PLAYER_UP;
+    case SOUTH: return PLAYER_DOWN;
+    case EAST:  return PLAYER_RIGHT;
+    case WEST:  return PLAYER_LEFT;
+    default: { assert(0); }
+    }
+}
 
 #define BEAM_HORZ  '-'
 #define BREAM_VERT '|'

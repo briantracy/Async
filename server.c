@@ -140,7 +140,6 @@ void generate_map() {
         set_char(state.map, state.width - 1, y, state.width, '#');
     }
 
-    set_char(state.map, 20, 1, state.width, '&');
 
     print_map(state.map, state.width, state.height);
 }

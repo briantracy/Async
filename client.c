@@ -28,8 +28,9 @@ int usage() {
 }
 
 game_t game;
-void x();
+
 int main(int argc, char *argv[]) {
+
     const int num_args = 7;
     char name[NAME_LEN + 1], host[HOST_LEN + 1], port[PORT_LEN + 1];
     int ch;
@@ -85,11 +86,84 @@ int main(int argc, char *argv[]) {
     } else {
         printf("async: downloaded map, `%lu` bytes\n", strlen(game.map));
     }
+    
+    game.player_loc.x = game.width / 2;
+    game.player_loc.y = game.height / 2;
+    game.player_dir = NORTH;
+    run_game();    
 
     return 0;
 }
-/* msg_len = <char><space><field length><\n><\0> */
 
+void run_game() {
+    initscr();
+    curs_set(FALSE);
+    while (1) {
+        render();
+        refresh();
+        get_input();
+    }
+    pause();
+    endwin();
+}
+
+void get_input() {
+    int key = getch();
+    switch (key) {
+    case 'w': { return move_player(NORTH); }
+    case 'a': { return move_player(WEST);  }
+    case 's': { return move_player(SOUTH); }
+    case 'd': { return move_player(EAST);  }
+    case 'j': { return fire(); }
+    }
+}
+
+void move_player(direction_t dir) {
+    unsigned int x = game.player_loc.x;
+    unsigned int y = game.player_loc.y;
+    switch (dir) {
+    case NORTH: { 
+        if (get_char(game.map, x, y - 1, game.width) != '#') {
+            game.player_loc.y--;
+        }
+        break;
+    }
+    case EAST:  { 
+        if (get_char(game.map, x + 1, y, game.width) != '#') {
+            game.player_loc.x++;
+        }
+        break;
+    }
+    case SOUTH: { 
+        if (get_char(game.map, x, y + 1, game.width) != '#') {            
+            game.player_loc.y++;
+        }
+        break;
+    }
+    case WEST:  { 
+        if (get_char(game.map, x - 1, y, game.width) != '#') {        
+            game.player_loc.x--;
+        }
+        break;
+    }
+    }
+    game.player_dir = dir;
+}
+
+void fire() {
+    
+}
+
+void render() {
+    for (int x = 0; x < game.width; x++) {
+        for (int y = 0; y < game.height; y++) {
+            mvaddch(y, x, get_char(game.map, x, y, game.width));
+        }
+    }
+   mvaddch(game.player_loc.y, game.player_loc.x, dir_to_symbol(game.player_dir));
+}
+
+/* msg_len = <char><space><field length><\n><\0> */
 int send_name() {
     const int msg_len = NAME_LEN + 4;
     char buff[msg_len];
@@ -113,11 +187,10 @@ int download_map() {
     if (fgets(buff, size_buff_len, game.io) == NULL) { return 0; }
     char *size_tuple = extract_message(buff);
     sscanf(size_tuple, "(%d,%d)", &game.width, &game.height);
-
+    printf("game width = (%d,%d)\n", game.width, game.height);
     const int map_buff_size = sizeof(char) * game.width * game.height + 1;
     game.map = malloc(map_buff_size);
     if (fgets(game.map, map_buff_size, game.io) == NULL) { return 0; }
-    print_map(game.map, game.width, game.height);
     return 1;
 }
 
