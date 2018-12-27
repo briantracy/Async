@@ -13,7 +13,7 @@
     (0, 10)
 */
 typedef struct {
-    int x, y;
+    unsigned int x, y;
 } point_t;
 
 

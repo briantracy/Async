@@ -4,7 +4,6 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <pthread.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -54,70 +53,77 @@ int main(int argc, char *argv[]) {
     
     generate_map();
     pthread_t listener = start_listener(state.port, &player_joined);
-
     pause();
     return 0;
 }
 
+// This runs on the (1) listener thread.
 void player_joined(FILE *io) {
-    // Client starts handshake with name.
-    const int name_buff_len = NAME_LEN + 4;
-    char buff[name_buff_len];
-    fgets(buff, name_buff_len, io);
-    char *name = extract_message(buff);
-    player_t *player = add_player(name);
-    if (player == NULL) {
-        fprintf(stderr, "could not create new player\n");
+    if (state.num_players >= state.max_players) {
+        fprintf(stderr, "async-server: player refused (too many players)\n");
         fputs(SERVER_ERROR, io);
         fflush(io);
-        pthread_exit(NULL);
+        fclose(io);
+        return;
     }
-    printf("new player: name = `%s`, id = `%d`\n", player->name, player->id);
+    const int name_buff_len = NAME_LEN + 4;
+    char nbuff[name_buff_len];
+    fgets(nbuff, name_buff_len, io);
+
+    player_t *p = add_player(extract_message(nbuff), io);
+    printf("async-server: player joined (`%s[%d]`)\n", p->name, p->id);
+
+    int s = pthread_create(&p->thread, NULL, &run_player, (void *)p);
+    if (s != 0) {
+        fprintf(stderr, "async-server: could not create player thread\n");
+    }
+}
+void *run_player(void *arg) {
+    player_t *player = (player_t *)arg;
 
     const int id_buff_len = ID_LEN + 4;
     char id_buff[id_buff_len];
     snprintf(id_buff, id_buff_len, "%c %d\n", H_ID, player->id);
-    fputs(id_buff, io);
-    fflush(io);
+    fputs(id_buff, player->io);
+    fflush(player->io);
 
     const int size_buff_len = SIZE_LEN + 4;
     char size_buff[size_buff_len];
     snprintf(size_buff, size_buff_len, "%c (%d,%d)\n", H_SIZE, state.width, state.height);
-    fputs(size_buff, io);
-    fflush(io);
+    fputs(size_buff, player->io);
+    fflush(player->io);
 
     // 1 char per map cell + newline + '\0'
     const size_t map_buff_size = state.width * state.height + 2;
     char map_buff[map_buff_size];
     snprintf(map_buff, map_buff_size, "%s\n", state.map);
-    print_map(map_buff, state.width, state.height);
-    fputs(map_buff, io);
-    fflush(io);
-    
+    fputs(map_buff, player->io);
+    fflush(player->io);
+
     char msg[100];
-    while (fgets(msg, 100, io) != NULL) {
-        printf("`%s`\n", msg);
+    while (fgets(msg, 100, player->io) != NULL) {
+        respond(extract_message(msg));
+        printf("[%d]`%s`\n", player->id, extract_message(msg));
     }
+    printf("async-server: player `%s[%d]` disconnected\n", player->name, player->id);
+    fflush(player->io);
+    fclose(player->io);
+    return NULL;
 }
 
-int transfer_initial_data(FILE *io) {
-    
-    return 0;
+void respond(char *cmd) {
+
 }
 
-player_t *add_player(char *name) {
-    player_t *ret = NULL;
+player_t *add_player(char *name, FILE *io) {
 
-    pthread_mutex_lock(&state.mutex);
-    if (state.num_players != state.max_players) {
-        ret = &state.players[state.num_players - 1];
-        ret->id = state.num_players;
-        ret->name = name;
-        state.num_players++;
-    }
-    
-    pthread_mutex_unlock(&state.mutex);
-    
+    player_t *ret = &state.players[state.num_players];
+    ret->id = state.num_players;
+    ret->name = malloc(sizeof(char) * strlen(name) + 1);
+    strcpy(ret->name, name);
+    ret->io = io;
+
+    state.num_players++;
     return ret;
 }
 

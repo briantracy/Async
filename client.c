@@ -113,7 +113,6 @@ void run_game() {
         refresh();
         get_input();
     }
-    pause();
     endwin();
 }
 
