@@ -113,7 +113,6 @@ void run_game() {
         refresh();
         get_input();
     }
-    endwin();
 }
 
 void get_input() {
@@ -167,7 +166,10 @@ void move_player(direction_t dir) {
 }
 
 void fire() {
-    
+    char buff[FIRE_LEN];
+    snprintf(buff, FIRE_LEN, "%c (%d,%d)@%d\n", H_FIRE, game.player_loc.x, game.player_loc.y, game.player_dir);
+    fputs(buff, game.io);
+    fflush(game.io);
 }
 
 void render() {

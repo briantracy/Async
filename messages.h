@@ -56,6 +56,10 @@ char *extract_message(char *raw) {
 #define H_SIZE 'Z'
 #define SIZE_LEN 16
 
+#define H_FIRE 'F'
+// (xxx,yyy) N\n
+#define FIRE_LEN 32
+
 #define SERVER_ERROR "E err\n"
 
 #endif
