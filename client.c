@@ -24,8 +24,7 @@
 
 
 int usage() {
-    printf("usage: async-client -n <player-name> -h <hostname> -p <port>\n");
-    return 1;
+    return !!printf("usage: async-client -n <player-name> -h <hostname> -p <port>\n");
 }
 
 game_t game;
@@ -99,6 +98,7 @@ int main(int argc, char *argv[]) {
 }
 
 void quit_game(int sig) {
+    curs_set(TRUE);
     endwin();
     fflush(game.io);
     fclose(game.io);
@@ -212,56 +212,3 @@ int download_map() {
     return 1;
 }
 
-
-void x() {
-
-    initscr();
-    noecho();
-    curs_set(FALSE);
-    mvaddstr(20, 10, "abcdefghijklmnop");
-    while (1) {
-        int k = getch();
-        char b[20];
-        snprintf(b, 20, "[key=%c,%d", (char)k, k);
-        doupdate();
-        refresh();
-        for (int i = 0; i < 40; i++) {
-            for (int j = 0; j < 15; j++) {
-                mvaddch(j, i, (char)((rand() % 80) + 33));
-            }
-        }
-        mvaddstr(20, 10, b);
-    }
-    //mvaddstr(3, 3, "\033[1;31mred\033[0;0m");
-
-   /* while (1) {
-        mvaddstr(3, 3, "getting key\n");
-        int k = getch();
-        printf("k = %c\n", (char)k);
-        if (k == 'a') break;
-        sleep(1);
-    }*/
-
-/*char c = 'a';
-while (1) {
-    int k = getch();
-    printf("%c\n", k);
-    return 0;
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            mvaddch(i, j, c);
-        }
-    }
-c++;
-refresh();
-sleep(1);
-}   
-    mvaddstr(12, 12, "standard error");   
-*/
-    refresh();
-
-
-    pause();
-    endwin();
-    printf("done\n");
-}
