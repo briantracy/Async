@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
     
     generate_map();
     pthread_t listener = start_listener(state.port, &player_joined);
+    
     pause();
     return 0;
 }
@@ -102,8 +103,7 @@ void *run_player(void *arg) {
 
     char msg[100];
     while (fgets(msg, 100, player->io) != NULL) {
-        respond(extract_message(msg));
-        printf("[%d]`%s`\n", player->id, extract_message(msg));
+        respond(player, msg);
     }
     printf("async-server: player `%s[%d]` disconnected\n", player->name, player->id);
     fflush(player->io);
@@ -111,8 +111,23 @@ void *run_player(void *arg) {
     return NULL;
 }
 
-void respond(char *cmd) {
-
+void respond(player_t *p, char *cmd) {
+    char *msg = extract_message(cmd);
+    printf("responding to `%s`\n", msg);
+    switch (cmd[0]) {
+    case H_MOVE: {
+        sscanf(msg, "(%d,%d)", &p->loc.x, &p->loc.y);
+        printf("player loc: [%d], (%d,%d)\n", p->id, p->loc.x, p->loc.y);
+        break;
+    }
+    case H_FIRE: {
+        unsigned int x, y;
+        direction_t d;
+        sscanf(msg, "(%d,%d)@%d", &x, &y, &d);
+        printf("shooting beam in dir: %d from (%d,%d)\n", d, x, y);
+    }
+    }
+    publish_positions();
 }
 
 player_t *add_player(char *name, FILE *io) {
@@ -131,6 +146,24 @@ void remove_player(player_t *p) {
 
 }
 
+void *publisher(void *arg) {
+    while (1) {
+        sleep(1);
+        publish_positions();
+    }
+}
+
+void publish_positions() {
+    printf("publishing locations\n");
+    for (int i = 0; i < state.num_players; i++) {
+        player_t *p = &state.players[i];
+        pthread_mutex_lock(&p->stream_mutex);
+        fputs("P (12,12)\n", p->io);
+        fflush(p->io);
+        pthread_mutex_unlock(&p->stream_mutex);
+    }
+
+}
 
 /* Game Logic */
 
@@ -150,9 +183,17 @@ void generate_map() {
         set_char(state.map, state.width - 1, y, state.width, '#');
     }
     
-    set_char(state.map, 4, 4, state.width, '#');
+    srand(time(NULL));
+    for (int x = 0; x < state.width; x++) {
+        for (int y = 0; y < state.height; y++) {
+            if (rand() % 100 < 15) {
+                set_char(state.map, x, y, state.width, '#');
+            }
+        }
+    }
+    
 
-    print_map(state.map, state.width, state.height);
+    //print_map(state.map, state.width, state.height);
 }
 
 /* Return true iff a beam shot from origin in direction will

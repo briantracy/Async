@@ -15,6 +15,7 @@
 #include <sys/uio.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <pthread.h>
 
 #include "client.h"
 #include "messages.h"
@@ -28,8 +29,9 @@ int usage() {
 }
 
 game_t game;
-
-
+pthread_t listener_thread;
+volatile long long x = 0;
+FILE *pp;
 int main(int argc, char *argv[]) {
 
     const int num_args = 7;
@@ -59,7 +61,10 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "async: could not connect to `%s:%s`\n", host, port);
         return 1;
     }
-
+    int sp = dup(sock);
+    printf("%d\n", sp);
+    pp = fdopen(sp, "r");
+    printf("%p\n", pp);
     FILE *io = fdopen(sock, "r+");
     if (io == NULL) {
         fprintf(stderr, "async: could not open socket\n");
@@ -92,16 +97,39 @@ int main(int argc, char *argv[]) {
     game.player_loc.x = game.width / 2;
     game.player_loc.y = game.height / 2;
     game.player_dir = NORTH;
+    
+    pthread_create(&listener_thread, NULL, &game_listener, NULL);
+    pthread_detach(listener_thread);
+    
     run_game();    
 
     return 0;
 }
 
+void *game_listener(void *arg) {
+    printf("in listener\n");
+   /* while (1) {
+        x += 1;
+    }
+    return NULL;*/
+    const int msg_len = 100;
+    char server[msg_len];
+    while (fgets(server, msg_len, pp) != NULL) {
+        mvaddstr(12, 12, server);
+        refresh();
+        //printf("from server: %s\n", server);
+
+    }
+    return NULL;
+}
+
 void quit_game(int sig) {
     curs_set(TRUE);
+    noecho();
     endwin();
     fflush(game.io);
     fclose(game.io);
+    printf("%llu\n", x);
     exit(sig);
 }
 
@@ -109,6 +137,8 @@ void run_game() {
     initscr();
     curs_set(FALSE);
     while (1) {
+        //printf("game loop\n");
+        //fflush(stdout);
         render();
         refresh();
         get_input();
@@ -161,6 +191,7 @@ void move_player(direction_t dir) {
     char buff[MOVE_LEN];
     snprintf(buff, MOVE_LEN, "%c (%d,%d)\n", H_MOVE,
                     game.player_loc.x, game.player_loc.y);
+    //printf("about to send move\n");
     fputs(buff, game.io);
     fflush(game.io);
 }

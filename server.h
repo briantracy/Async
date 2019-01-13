@@ -9,10 +9,16 @@ typedef struct {
     unsigned int id;
     point_t loc;
     char *name;
-    FILE *io;
+    FILE *io, publish_stream;
     
+    // Each client gets its own thread on the server
     pthread_t thread;
+    // Each client thread updates location, but main thread
+    // has to read locations to send updates to clients.
     pthread_mutex_t loc_mutex;
+    // Make sure only one thread (either the client thread or the
+    // publisher thread) is writing to each clients stream at once.
+    // TODO: are FILE * operations threadsafe?
     pthread_mutex_t stream_mutex;
 } player_t;
 
@@ -26,7 +32,7 @@ typedef struct {
 
     char *map;
 
-    pthread_mutex_t mutex;
+    pthread_mutex_t player_mutex;
 } server_state_t;
 
 
@@ -34,8 +40,10 @@ void player_joined(FILE *);
 void *run_player(void *); // thread func
 player_t *add_player(char *, FILE *);
 void remove_player(player_t *);
-void respond(char *);
+void respond(player_t *, char *);
 
+void *publisher(void *);
+void publish_positions();
 
 
 /* Game Logic */

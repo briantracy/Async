@@ -62,6 +62,13 @@
     Now that you know the rules and how to play, see below for the technical details on how
     to get async and async-server up and running.
 
+To Do
+=====
+1. Handle CLA better.
+2. Handle player list better (currently its an array, what if someone leaves and rejoins?)
+2. Publisher thread on server.
+3. Subscriber thread on client.
+4. Beam and position drawing client side. (need mutex on player loc).
 
     +-------------------------------------+
     | Technical Details - Getting Started |
