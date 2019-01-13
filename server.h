@@ -1,5 +1,5 @@
-#ifndef _ASYNC_SERVER_H
-#define _ASYNC_SERVER_H
+#ifndef _SERVER_H
+#define _SERVER_H
 
 #include <pthread.h>
 
@@ -50,5 +50,5 @@ void publish_positions();
 int hit_test(player_t *, point_t, direction_t);
 void generate_map();
 
-#endif /* ASYNC_SERVER_H */
+#endif
 

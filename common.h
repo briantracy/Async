@@ -1,6 +1,5 @@
-#ifndef _ASYNC_COMMON_H
-#define _ASYNC_COMMON_H
-
+#ifndef _COMMON_H
+#define _COMMON_H
 
 /*
     Origin of the frame is top left.
@@ -43,4 +42,4 @@ void print_map(char *map, int width, int height) {
     }
 }
 
-#endif /* _ASYNC_COMMON_H */
+#endif

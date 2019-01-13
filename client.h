@@ -1,5 +1,5 @@
-#ifndef _ASYNC_CLIENT_H
-#define _ASYNC_CLIENT_H
+#ifndef _CLIENT_H
+#define _CLIENT_H
 
 #include "common.h"
 #include <assert.h>

@@ -36,12 +36,16 @@ static int comm_port;
 pthread_t start_listener(int port, void (*server)(FILE *)) {
     comm_port = port;
     pthread_t tid;
-    int err;
 
-    if ((err = pthread_create(&tid, 0, (void *(*)(void *))listener,
-                              (void *)server)))
-        handle_error_en(err, "pthread_create");
-    if ((err = pthread_detach(tid))) handle_error_en(err, "pthread_detach");
+    if (pthread_create(&tid, 0, (void *(*)(void *))listener,
+                                (void *)server) != 0) {
+        perror("pthread_create");
+        return (pthread_t)0;
+    }
+    if (pthread_detach(tid) != 0) {
+        perror("pthread_detach");
+        return (pthread_t)0;
+    }
 
     return tid;
 }
@@ -138,24 +142,3 @@ int get_socket(const char *server, const char *port) {
     return sock;
 }
 
-
-void comm_shutdown(FILE *cxstr) {
-    if (fclose(cxstr) < 0) perror("fclose");
-}
-
-int comm_serve(FILE *cxstr, char *response, char *command) {
-    if (strlen(response) > 0) {
-        if (fputs(response, cxstr) == EOF || fputc('\n', cxstr) == EOF ||
-            fflush(cxstr) == EOF) {
-            fprintf(stderr, "client connection terminated\n");
-            return -1;
-        }
-    }
-
-    if (fgets(command, BUFLEN, cxstr) == NULL) {
-        fprintf(stderr, "client connection terminated\n");
-        return -1;
-    }
-
-    return 0;
-}

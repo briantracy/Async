@@ -1,5 +1,5 @@
-#ifndef _ASYNC_MESSAGES_H
-#define _ASYNC_MESSAGES_H
+#ifndef _MESSAGES_H
+#define _MESSAGES_H
 
 
 
