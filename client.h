@@ -5,11 +5,11 @@
 #include <assert.h>
 
 typedef struct {
-    unsigned int width, height;
+    int width, height;
     char *map;
     
     char *name;
-    unsigned int id;
+    int id;
 
     point_t player_loc;
     direction_t player_dir;

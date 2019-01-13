@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -25,7 +24,7 @@
 
 
 int usage() {
-    return !!printf("usage: async-client -n <player-name> -h <hostname> -p <port>\n");
+    return !!printf("usage: %s -n <player-name> -h <hostname> -p <port>\n", PROGNAME);
 }
 
 game_t game;
@@ -107,6 +106,7 @@ int main(int argc, char *argv[]) {
 }
 
 void *game_listener(void *arg) {
+    (void)arg;
     printf("in listener\n");
    /* while (1) {
         x += 1;

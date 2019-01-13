@@ -10,7 +10,6 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include <pthread.h>
 
 #include "server.h"
 #include "common.h"
@@ -53,7 +52,7 @@ int main(int argc, char *argv[]) {
     
     generate_map();
     pthread_t listener = start_listener(state.port, &player_joined);
-    
+    (void)listener;
     pause();
     return 0;
 }
@@ -143,10 +142,11 @@ player_t *add_player(char *name, FILE *io) {
 }
 
 void remove_player(player_t *p) {
-
+    (void)p;
 }
 
 void *publisher(void *arg) {
+    (void)arg;
     while (1) {
         sleep(1);
         publish_positions();

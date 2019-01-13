@@ -24,11 +24,11 @@ typedef struct {
 
 typedef struct {
     player_t *players;
-    unsigned int max_players;
-    unsigned int num_players;
+    int max_players;
+    int num_players;
 
     int port;
-    unsigned int width, height;
+    int width, height;
 
     char *map;
 
